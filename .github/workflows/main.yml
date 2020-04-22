@@ -1,0 +1,19 @@
+name: High vulns Snyk PR scan
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  high-only-snyk-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Snyk to check Guacd image for high vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: dwpdigital/headless-chrome
+          args: --file=Dockerfile --severity-threshold=high --exclude-base-image-vulns --org=dwp-dataworks
