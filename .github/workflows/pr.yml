@@ -1,4 +1,4 @@
-name: Build, vulnerability scan and deploy
+name: High vulns Snyk PR scan
 
 on: pull_request
 
@@ -6,17 +6,16 @@ env:
   IMAGE_NAME: dwpdigital/headless-chrome
 
 jobs:
-  full-snyk-scan:
+  build-and-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build Docker image
         run: docker build -t ${{ env.IMAGE_NAME }}:latest .
-      - name: Run Snyk to check headless-chrome image for all vulnerabilities
+      - name: Run Snyk to check image for high vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: monitor
           image: ${{ env.IMAGE_NAME }}
-          args: --org=dwp-dataworks --file=Dockerfile
+          args: --file=Dockerfile --severity-threshold=high --exclude-base-image-vulns --org=dwp-dataworks
