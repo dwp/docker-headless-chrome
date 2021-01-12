@@ -7,7 +7,7 @@ RUN apk update \
 
 RUN apk add x11vnc xvfb supervisor \
     && addgroup alpine \
-    && adduser  -G alpine -s /bin/sh -D alpine \
+    && adduser  -G alpine -u 1001 -s /bin/sh -D alpine \
     && echo "alpine:alpine" | /usr/sbin/chpasswd \
     && apk add --no-cache python3 libstdc++ chromium harfbuzz nss freetype ttf-freefont
 
