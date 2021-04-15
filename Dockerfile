@@ -1,4 +1,4 @@
-FROM centos:8
+FROM quay.io/centos/centos:stream8
 
 RUN dnf -y update && dnf -y install epel-release
 RUN dnf -y install x11vnc chromium supervisor openssh-server \
