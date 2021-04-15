@@ -1,37 +1,48 @@
-FROM alpine:latest
+FROM centos:8
 
-LABEL MAINTAINER "Casey Rogers"
+RUN dnf -y update && dnf -y install epel-release
+RUN dnf -y install x11vnc chromium supervisor openssh-server \
+           xorg-x11-fonts-100dpi.noarch \
+           xorg-x11-fonts-75dpi.noarch \
+           xorg-x11-fonts-ISO8859-1-100dpi.noarch \
+           xorg-x11-fonts-ISO8859-1-75dpi.noarch \
+           xorg-x11-fonts-ISO8859-14-100dpi.noarch \
+           xorg-x11-fonts-ISO8859-14-75dpi.noarch \
+           xorg-x11-fonts-ISO8859-15-100dpi.noarch \
+           xorg-x11-fonts-ISO8859-15-75dpi.noarch \
+           xorg-x11-fonts-ISO8859-2-100dpi.noarch \
+           xorg-x11-fonts-ISO8859-2-75dpi.noarch \
+           xorg-x11-fonts-ISO8859-9-100dpi.noarch \
+           xorg-x11-fonts-ISO8859-9-75dpi.noarch \
+           xorg-x11-fonts-Type1.noarch \
+           xorg-x11-fonts-cyrillic.noarch \
+           xorg-x11-fonts-ethiopic.noarch \
+           xorg-x11-fonts-misc.noarch
 
-RUN apk update \ 
-    &&  apk upgrade
-
-RUN apk add x11vnc xvfb supervisor \
-    && addgroup alpine \
-    && adduser  -G alpine -u 1001 -s /bin/sh -D alpine \
-    && echo "alpine:alpine" | /usr/sbin/chpasswd \
-    && apk add --no-cache python3 libstdc++ chromium harfbuzz nss freetype ttf-freefont \
+RUN groupadd user \
+    && useradd -g user -u 1001 -s /bin/sh user \
+    && echo "user:user" | /usr/sbin/chpasswd \
     && mkdir -p /var/log/supervisord \
-    && chown -R alpine:alpine /var/log/supervisord
+    && chown -R user:user /var/log/supervisord
 
-RUN apk add openssh openssh-sftp-server openssh-server-pam \
-    && mkdir -p /var/run/sshd  \
+RUN mkdir -p /var/run/sshd  \
     && rm -f /etc/ssh/ssh_host_*key* \
-    && chown -R alpine:alpine /etc/ssh \
+    && chown -R user:user /etc/ssh \
     && mkdir -p /var/run/sftp \
-    && chown -R alpine:alpine /var/run/sftp \
-    && echo "alpine" > "/var/run/sftp/users.conf"
+    && chown -R user:user /var/run/sftp \
+    && echo "user" > "/var/run/sftp/users.conf"
 
 COPY etc/supervisord.conf /etc/supervisord.conf
 COPY etc/sshd_config /etc/ssh/sshd_config
-COPY --chown=alpine:alpine startup.sh /home/alpine/startup.sh
+COPY --chown=user:user startup.sh /home/user/startup.sh
 
-RUN chmod u+x /home/alpine/startup.sh
+RUN chmod u+x /home/user/startup.sh
 
-WORKDIR /home/alpine
+WORKDIR /home/user
 
 EXPOSE 5900
 EXPOSE 22
 
-USER alpine
+USER user
 
-CMD ["/home/alpine/startup.sh"]
+CMD ["/home/user/startup.sh"]
