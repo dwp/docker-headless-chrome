@@ -33,7 +33,7 @@ if [ ! -z "$DOWNLOADS_LOCATION" ]; then
     else
         echo "Linking downloads directory to $DOWNLOADS_LOCATION"
         mkdir -p "$DOWNLOADS_LOCATION/Downloads"
-        ln -s "$DOWNLOADS_LOCATION/Downloads" "/home/alpine/Downloads"
+        ln -s "$DOWNLOADS_LOCATION/Downloads" "/home/user/Downloads"
     fi;
 fi;
 
