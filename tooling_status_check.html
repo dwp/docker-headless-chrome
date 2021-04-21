@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provisioning Environment</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .main-wrapper {
+            padding: 50px 100px;
+            box-shadow: rgb(0 0 0 / 20%) 1px 1px 20px 4px;
+            border-radius: 15px;
+        }
+
+        .main-wrapper>* {
+            text-align: center;
+        }
+
+        .status-wrapper {
+            margin: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .status-row {
+            width: 70%;
+            border-bottom: 1px solid #aaaaaa;
+            text-align: center;
+        }
+
+        .status-row:first-of-type {
+            border-top: 1px solid #aaaaaa;
+        }
+
+        .status-item {
+            display: inline-flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 70%;
+            max-width: 300px;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #7ac142;
+            fill: none;
+            animation: stroke .6s cubic-bezier(0.650, 0.000, 0.450, 1.000) forwards;
+        }
+
+        .checkmark {
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            margin: 10% auto;
+            box-shadow: inset 0px 0px 0px #7ac142;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke .3s cubic-bezier(0.650, 0.000, 0.450, 1.000) .8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px #7ac142;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-wrapper">
+        <h1>Provisioning Tooling Environments</h1>
+        <div class="status-wrapper"></div>
+    </div>
+
+    <template id="status-template">
+        <div class="status-row">
+            <div class="status-item">
+                <h3 class="status-item__name">
+                </h3>
+                <div class="status-item__status"></div>
+            </div>
+        </div>
+    </template>
+    <template id="loading-svg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="2em" viewBox="0 0 40 40" stroke="#000000">
+            <g fill="none" fill-rule="evenodd" transform="translate(1 1)" stroke-width="2">
+                <circle cx="20" cy="20" r="7" stroke-opacity="0">
+                    <animate attributeName="r" begin="1.5s" dur="3s" values="6;22" calcMode="linear"
+                        repeatCount="indefinite" />
+                    <animate attributeName="stroke-opacity" begin="1.5s" dur="3s" values="1;0" calcMode="linear"
+                        repeatCount="indefinite" />
+                    <animate attributeName="stroke-width" begin="1.5s" dur="3s" values="2;0" calcMode="linear"
+                        repeatCount="indefinite" />
+                </circle>
+                <circle cx="20" cy="20" r="7" stroke-opacity="0">
+                    <animate attributeName="r" begin="3s" dur="3s" values="6;22" calcMode="linear"
+                        repeatCount="indefinite" />
+                    <animate attributeName="stroke-opacity" begin="3s" dur="3s" values="1;0" calcMode="linear"
+                        repeatCount="indefinite" />
+                    <animate attributeName="stroke-width" begin="3s" dur="3s" values="2;0" calcMode="linear"
+                        repeatCount="indefinite" />
+                </circle>
+                <circle cx="20" cy="20" r="9">
+                    <animate attributeName="r" begin="0s" dur="1.5s" values="6;1;2;3;4;5;6" calcMode="linear"
+                        repeatCount="indefinite" />
+                </circle>
+            </g>
+        </svg>
+    </template>
+    <template id="active-svg">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" width="2em" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+    </template>
+    <script>
+
+        async function refreshStatus() {
+            const statuses = await fetch('/status').then(_ => _.json());
+            const requiredContainerStatus = statuses
+                .filter(container => container.required === 'true')
+                .map(container => container.status)
+
+            if (!requiredContainerStatus.includes('inactive')) {
+                clearInterval(interval);
+                window.setTimeout(() => statuses
+                    .map(container => container.url)
+                    .forEach((url, index) => window.open(url, index === 0 ? '_self' : '_blank')),
+                    1500)
+            }
+
+            const elements = statuses.map((container) => {
+                const loadingSvg = document.querySelector('#loading-svg').content.cloneNode(true);
+                const activeSvg = document.querySelector('#active-svg').content.cloneNode(true);
+                const template = document.querySelector('#status-template').content.firstElementChild.cloneNode(true);
+                template.querySelector('.status-item__name').textContent = container.name.charAt(0).toUpperCase() + container.name.slice(1);
+                template.querySelector('.status-item__status').append(container.status === 'inactive' ? loadingSvg : activeSvg);
+                return template;
+            });
+
+            const parent = document.querySelector('.status-wrapper');
+            if (parent.children.length == 0)
+                parent.append(...elements);
+            else
+                elements.forEach((element, index) => {
+                    if (!element.isEqualNode(parent.children[index]))
+                        parent.children[index].replaceWith(element)
+                })
+        }
+
+        const interval = window.setInterval(refreshStatus, 1500);
+        refreshStatus();
+    </script>
+
+</body>
+
+</html>

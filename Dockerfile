@@ -36,6 +36,9 @@ COPY etc/supervisord.conf /etc/supervisord.conf
 COPY etc/sshd_config /etc/ssh/sshd_config
 COPY --chown=user:user startup.sh /home/user/startup.sh
 
+ENV TEMPLATE_PATH "/opt/dataworks/tooling_status_check.html"
+COPY tooling_status_check.* /opt/dataworks/
+
 RUN chmod u+x /home/user/startup.sh
 
 WORKDIR /home/user
