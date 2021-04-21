@@ -45,9 +45,10 @@ class Server(BaseHTTPRequestHandler):
 
     def get_container_status(self):
         statuses = []
+        print(self.container_info)
         for container in self.container_info:
-            container_status = dict(name=container["name"], url=container["url"], required=container["required"])
-            if(container["required"] == "true"):
+            container_status = dict(name=container["name"], url=container["url"], required=container["required"] or container["required"] == "true")
+            if container_status["required"] == True:
                 try:
                     status_code = GET_request(container["url"]).status
                     container_status["status"] = "active" if status_code < 500 else "inactive"
