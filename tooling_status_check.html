@@ -159,7 +159,7 @@
         </svg>
     </template>
     <script>
-
+        const TIMEOUT = 120 * 1000 // 120 seconds
         async function refreshStatus() {
             const statuses = await fetch('/status').then(_ => _.json());
             console.log(statuses);
@@ -167,7 +167,7 @@
                 .filter(container => container.required === true)
                 .map(container => container.status)
 
-            if (!requiredContainerStatus.includes('inactive')) {
+            if (!requiredContainerStatus.includes('inactive') || startTime + TIMEOUT < Date.now()) {
                 clearInterval(interval);
                 window.setTimeout(() => statuses
                     .map(container => container.url)
@@ -193,7 +193,7 @@
                         parent.children[index].replaceWith(element)
                 })
         }
-
+        let startTime = Date.now()
         const interval = window.setInterval(refreshStatus, 1500);
         refreshStatus();
     </script>
