@@ -160,19 +160,16 @@
     </template>
     <script>
         const TIMEOUT = 120 * 1000 // 120 seconds
+
         async function refreshStatus() {
             const statuses = await fetch('/status').then(_ => _.json());
-            console.log(statuses);
             const requiredContainerStatus = statuses
                 .filter(container => container.required === true)
                 .map(container => container.status)
 
             if (!requiredContainerStatus.includes('inactive') || startTime + TIMEOUT < Date.now()) {
                 clearInterval(interval);
-                window.setTimeout(() => statuses
-                    .map(container => container.url)
-                    .forEach((url, index) => window.open(url, index === 0 ? '_self' : '_blank')),
-                    1500)
+                window.setTimeout(async () => await fetch('/open-tabs'), 1500);
             }
 
             const elements = statuses.map((container) => {
