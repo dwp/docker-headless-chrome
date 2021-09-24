@@ -1,0 +1,25 @@
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+Protocol 2
+
+Port 8022
+
+UseDNS no
+
+PidFile /var/run/sshd/sshd.pid
+
+# Limit access
+PermitRootLogin no
+X11Forwarding no
+AllowTcpForwarding no
+
+# Only allow sftp
+Subsystem sftp internal-sftp
+ForceCommand internal-sftp
+# ChrootDirectory %h # Not working without suid
+
+# Only allow pubkey authentication
+UsePAM yes
+ChallengeResponseAuthentication no
+PasswordAuthentication no
+
